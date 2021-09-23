@@ -3,15 +3,6 @@ const isDev = require('electron-is-dev')
 const path = require('path')
 let win
 
-const registerAllShortcuts = () => {
-  Object.values(SHORTCUTS)
-    .forEach(cmd => {
-      globalShortcut.register(cmd, () => {
-        win.webContents.send(cmd, cmd)
-      })
-    })
-}
-
 const createWindow = () => {
   win = new BrowserWindow({
     show: false,

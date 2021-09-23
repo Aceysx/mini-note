@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no"
+    />
+    <link rel="stylesheet" href="/umi.css"/>
+</head>
+<style>
+    body * {
+        cursor: url(default.cur), auto !important
+    }
+
+    .cursor_pointer, svg, input, textarea, a, i {
+        cursor: url(pointer.cur), auto !important;
+    }
+
+    body {
+        height: 100%;
+        overflow: hidden;
+    }
+</style>
+<script>
+    window.electron = require('electron')
+
+    document.onkeydown = function (event) {
+        //禁用 刷新
+        if ((event.ctrlKey === true || event.metaKey === true) &&
+            (event.which === 82 || event.which === 114 || event.which === 116)) {
+            event.preventDefault()
+        }
+        //禁用全选快捷键
+        if ((event.ctrlKey === true || event.metaKey === true) && event.which === 65) {
+            event.preventDefault()
+        }
+    }
+</script>
+
+<div id="root"></div>
+
+<script src="/umi.js"></script>
+</body>
+<script>
+    window.onload = function () {
+        //禁用鼠标选择
+        document.getElementById('root')
+            .onselectstart = function () {
+            return false
+        }
+    }
+</script>
+</html>
