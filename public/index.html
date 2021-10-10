@@ -23,14 +23,13 @@
     }
 </style>
 <script>
-    window.electron = require('electron')
-
+    // window.electron = require('electron')
     document.onkeydown = function (event) {
         //禁用 刷新
-        if ((event.ctrlKey === true || event.metaKey === true) &&
-            (event.which === 82 || event.which === 114 || event.which === 116)) {
-            event.preventDefault()
-        }
+        // if ((event.ctrlKey === true || event.metaKey === true) &&
+        //     (event.which === 82 || event.which === 114 || event.which === 116)) {
+        //     event.preventDefault()
+        // }
         //禁用全选快捷键
         if ((event.ctrlKey === true || event.metaKey === true) && event.which === 65) {
             event.preventDefault()

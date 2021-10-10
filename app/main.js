@@ -1,40 +1,43 @@
 const {app, BrowserWindow, globalShortcut} = require('electron')
 const isDev = require('electron-is-dev')
 const path = require('path')
+require('./main-process/listener')
+
 let win
 
 const createWindow = () => {
-  win = new BrowserWindow({
-    show: false,
-    webPreferences: {
-      nodeIntegration: true,
-      webSecurity: false
-    },
-    titleBarStyle: 'hiddenInset',
+    win = new BrowserWindow({
+        show: false,
+        webPreferences: {
+            nodeIntegration: true,
+            webSecurity: false,
+            contextIsolation: false
+        },
+        titleBarStyle: 'hiddenInset',
 
-  })
-  win.webContents.session.webRequest.onHeadersReceived({ urls: [ "*://*/*" ] },
-    (d, c)=>{
-      if(d.responseHeaders['X-Frame-Options']){
-        delete d.responseHeaders['X-Frame-Options'];
-      } else if(d.responseHeaders['x-frame-options']) {
-        delete d.responseHeaders['x-frame-options'];
-      }
+    })
+    win.webContents.session.webRequest.onHeadersReceived({urls: ["*://*/*"]},
+        (d, c) => {
+            if (d.responseHeaders['X-Frame-Options']) {
+                delete d.responseHeaders['X-Frame-Options'];
+            } else if (d.responseHeaders['x-frame-options']) {
+                delete d.responseHeaders['x-frame-options'];
+            }
 
-      c({cancel: false, responseHeaders: d.responseHeaders});
+            c({cancel: false, responseHeaders: d.responseHeaders});
+        }
+    );
+    win.maximize()
+
+    win.loadURL(isDev
+        ? 'http://localhost:8000/'
+        : `file://${path.join(__dirname, './index.html')}`)
+    if (isDev) {
+        win.webContents.openDevTools();
     }
-  );
-  win.maximize()
-
-  win.loadURL(isDev
-    ? 'http://localhost:8000/'
-    : `file://${path.join(__dirname, './index.html')}`)
-  if (isDev) {
-  win.webContents.openDevTools();
-  }
-  win.once('ready-to-show', () => {
-    win.show()
-  })
+    win.once('ready-to-show', () => {
+        win.show()
+    })
 
 //  registerAllShortcuts()
 }

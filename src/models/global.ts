@@ -1,70 +1,41 @@
-import { Effect, Reducer, Subscription } from 'umi';
+import {Reducer} from 'umi';
+import FileModel from "@/models/file";
+
+export interface SiderbarState {
+  rootFile: FileModel | undefined,
+  dirsOpenState: {}
+}
 
 export interface GlobalModelState {
-  name: string;
-  menusData: [];
+  workspace: string;
+  siderbarState: SiderbarState
 }
 
 export interface GlobalModelType {
   namespace: 'global';
   state: GlobalModelState;
-  effects: {
-    queryUserInfo: Effect;
-  };
+  effects: {}
   reducers: {
-    save: Reducer<GlobalModelState>;
-    // 启用 immer 之后
-    // save: ImmerReducer<GlobalModelState>;
+    siderbarState: Reducer<GlobalModelState>;
   };
-  subscriptions: { setup: Subscription };
 }
 
 const GlobalModel: GlobalModelType = {
   namespace: 'global',
   state: {
-    name: '',
-    menusData: [],
+    workspace: window.localStorage.getItem('workspace') + "",
+    siderbarState: {rootFile: undefined, dirsOpenState:{}}
   },
-  effects: {
-    *queryUserInfo({}, { call, put }) {
-      // const userid = localStorage.getItem('userid');
-      // queryUserInfo, { ...payload, userid }
-      const response = yield call();
-      if (response.status === 'ok') {
-        yield put({
-          type: 'save',
-          payload: {
-            userInfo: response.data,
-          },
-        });
-      }
-    },
-  },
+  effects: {},
   reducers: {
-    save(state, action) {
+    siderbarState(state: any, data: any): any {
+      console.log(state,data)
       return {
         ...state,
-        ...action.payload,
+        ...{siderbarState: {...state.siderbarState, ...data}},
       };
     },
-    // 启用 immer 之后
-    // save(state, action) {
-    //   state.name = action.payload;
-    // },
-  },
-  subscriptions: {
-    setup({ dispatch, history }) {
-      return history.listen(({ pathname }) => {
-        const reg = /^\/login/g;
-        if (!reg.test(pathname)) {
-          dispatch({
-            type: 'queryUserInfo',
-            payload: {},
-          });
-        }
-      });
-    },
-  },
+  }
 };
 
 export default GlobalModel;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import '../global.less'
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -7,8 +7,9 @@ import '@fontsource/roboto/700.css';
 import {styled} from '@mui/material/styles';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
-import {Sidebar} from "@/layouts/sidebar";
+import Sidebar from "@/layouts/sidebar";
 import {Content} from './content';
+import FileModel from "@/models/file";
 
 const Item = styled(Paper)(({theme}) => ({
     ...theme.typography.body2,
@@ -18,13 +19,18 @@ const Item = styled(Paper)(({theme}) => ({
 }));
 
 export default function () {
+
+    useEffect(() => {
+        FileModel.fetchFilesByPath("/Users/xinsi/Documents/PERSONAL/notebook")
+    }, [])
+
     return <Grid container spacing={2} className='container'>
-        <Grid item xs={2}>
+        <Grid item xs={3}>
             <Item>
                 <Sidebar/>
             </Item>
         </Grid>
-        <Grid item xs={10}>
+        <Grid item xs={9}>
             <Item>
                 <Content/>
             </Item>
