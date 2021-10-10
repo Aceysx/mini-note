@@ -30,11 +30,13 @@ const Sidebar = ({
     // @ts-ignore
     return dirsOpenState[path];
   };
+
   const clickDirItem = (file: FileModel | undefined) => {
     if (file) {
       dispatch({
         type: FileModel.actionType,
-        dirsOpenState: { ...dirsOpenState, [file.path]: !isOpen(file.path) }
+        dirsOpenState: { ...dirsOpenState, [file.path]: !isOpen(file.path) },
+        currentSelectedDirFile: file
       });
     }
   };

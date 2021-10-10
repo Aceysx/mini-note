@@ -1,7 +1,10 @@
-import React from 'react';
+import React from "react";
+import NoteBody from "../components/note-body";
 
 export const Content = () => {
-    return <div>
-        content
+  return (
+    <div>
+      <NoteBody />
     </div>
-}
+  );
+};

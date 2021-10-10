@@ -4,6 +4,8 @@ import FileModel from "@/models/file";
 export interface SiderbarState {
   rootFile: FileModel | undefined;
   dirsOpenState: {};
+  currentSelectedDirFile: FileModel | undefined;
+  currentEditFile: undefined;
 }
 
 export interface GlobalModelState {
@@ -24,7 +26,12 @@ const GlobalModel: GlobalModelType = {
   namespace: "global",
   state: {
     workspace: window.localStorage.getItem("workspace") + "",
-    siderbarState: { rootFile: undefined, dirsOpenState: {} }
+    siderbarState: {
+      rootFile: undefined,
+      dirsOpenState: {},
+      currentSelectedDirFile: undefined,
+      currentEditFile: undefined
+    }
   },
   effects: {},
   reducers: {
