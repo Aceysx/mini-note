@@ -1,40 +1,39 @@
-import {Reducer} from 'umi';
+import { Reducer } from "umi";
 import FileModel from "@/models/file";
 
 export interface SiderbarState {
-  rootFile: FileModel | undefined,
-  dirsOpenState: {}
+  rootFile: FileModel | undefined;
+  dirsOpenState: {};
 }
 
 export interface GlobalModelState {
   workspace: string;
-  siderbarState: SiderbarState
+  siderbarState: SiderbarState;
 }
 
 export interface GlobalModelType {
-  namespace: 'global';
+  namespace: "global";
   state: GlobalModelState;
-  effects: {}
+  effects: {};
   reducers: {
     siderbarState: Reducer<GlobalModelState>;
   };
 }
 
 const GlobalModel: GlobalModelType = {
-  namespace: 'global',
+  namespace: "global",
   state: {
-    workspace: window.localStorage.getItem('workspace') + "",
-    siderbarState: {rootFile: undefined, dirsOpenState:{}}
+    workspace: window.localStorage.getItem("workspace") + "",
+    siderbarState: { rootFile: undefined, dirsOpenState: {} }
   },
   effects: {},
   reducers: {
     siderbarState(state: any, data: any): any {
-      console.log(state,data)
       return {
         ...state,
-        ...{siderbarState: {...state.siderbarState, ...data}},
+        ...{ siderbarState: { ...state.siderbarState, ...data } }
       };
-    },
+    }
   }
 };
 
