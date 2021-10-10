@@ -6,9 +6,19 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import FileModel from "@/models/file";
 
-const FileCard = ({ file }: { file: FileModel }) => {
+const FileCard = ({
+  file,
+  selectFile
+}: {
+  file: FileModel;
+  selectFile: Function;
+}) => {
   return (
-    <Card className={"file-card"} variant={"outlined"}>
+    <Card
+      className={"file-card"}
+      variant={"outlined"}
+      onClick={() => selectFile(file)}
+    >
       <CardContent>
         <Typography variant="subtitle1" component="div">
           {file.parseDisplayName()}

@@ -5,7 +5,7 @@ export interface SiderbarState {
   rootFile: FileModel | undefined;
   dirsOpenState: {};
   currentSelectedDirFile: FileModel | undefined;
-  currentEditFile: undefined;
+  currentEditFile: FileModel | undefined;
 }
 
 export interface GlobalModelState {
