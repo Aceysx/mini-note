@@ -99,12 +99,17 @@ const Sidebar = ({
 
   return (
     <List
-      sx={{ width: "100%", bgcolor: "background.paper" }}
+      sx={{
+        width: "100%",
+        height: document.body.clientHeight,
+        overflowY: "scroll"
+      }}
+      className={"layout_scroll_hide"}
       component="nav"
       aria-labelledby="nested-list-subheader"
-      subheader={
-        <ListSubheader component="div" style={{ height: 50 }}></ListSubheader>
-      }
+      // subheader={
+      //   <ListSubheader component="div" style={{height: 50}}></ListSubheader>
+      // }
     >
       <ListItemButton>
         <ListItemIcon>

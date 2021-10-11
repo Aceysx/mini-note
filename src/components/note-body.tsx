@@ -8,10 +8,10 @@ import Grid from "@mui/material/Grid";
 import FileCard from "@/components/file-card";
 import { connect } from "umi";
 import GlobalModel, { GlobalModelState, SiderbarState } from "@/models/global";
-
-import "./note-body.less";
 import FileModel from "@/models/file";
 import NoteContent from "@/components/note-content";
+
+import "./note-body.less";
 
 const NoteBody = ({
   siderbarState
@@ -31,8 +31,13 @@ const NoteBody = ({
   };
 
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={3}>
+    <Grid container>
+      <Grid
+        item
+        xs={3}
+        className={"layout_scroll_hide"}
+        style={{ height: document.body.clientHeight, overflowY: "scroll" }}
+      >
         {currentSelectedDirFile
           ? currentSelectedDirFile
               .getSub()
@@ -47,7 +52,7 @@ const NoteBody = ({
               ))
           : ""}
       </Grid>
-      <Grid item xs={9}>
+      <Grid item xs={9} style={{ height: document.body.clientHeight }}>
         {currentEditFile ? (
           <NoteContent
             file={currentEditFile}

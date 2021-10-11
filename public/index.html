@@ -17,27 +17,27 @@
         cursor: url(pointer.cur), auto !important;
     }
 
-    body {
-        height: calc(100vh);
+    #root {
+        height: 100%;
     }
-    #root{
-              height: 100%;overflow: hidden;
 
+    * {
+        /*overflow-x: hidden;*/
     }
 </style>
 <script>
-    // window.electron = require('electron')
-    document.onkeydown = function (event) {
-        //禁用 刷新
-        // if ((event.ctrlKey === true || event.metaKey === true) &&
-        //     (event.which === 82 || event.which === 114 || event.which === 116)) {
-        //     event.preventDefault()
-        // }
-        //禁用全选快捷键
-        if ((event.ctrlKey === true || event.metaKey === true) && event.which === 65) {
-            event.preventDefault()
-        }
-    }
+  // window.electron = require('electron')
+  // document.onkeydown = function (event) {
+  //     //禁用 刷新
+  //     // if ((event.ctrlKey === true || event.metaKey === true) &&
+  //     //     (event.which === 82 || event.which === 114 || event.which === 116)) {
+  //     //     event.preventDefault()
+  //     // }
+  //     //禁用全选快捷键
+  //     if ((event.ctrlKey === true || event.metaKey === true) && event.which === 65) {
+  //         event.preventDefault()
+  //     }
+  // }
 </script>
 
 <div id="root"></div>
@@ -45,12 +45,8 @@
 <script src="/umi.js"></script>
 </body>
 <script>
-    window.onload = function () {
-        //禁用鼠标选择
-        document.getElementById('root')
-            .onselectstart = function () {
-            return false
-        }
-    }
+  window.onload = function () {
+    document.getElementsByTagName("body")[0].style.height = document.body.clientHeight + "px";
+  }
 </script>
 </html>

@@ -1,12 +1,12 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import FileModel from "@/models/file";
-import SimpleMdeReact from "react-simplemde-editor";
-import "easymde/dist/easymde.min.css";
 import Box from "@mui/material/Box/Box";
 import { Input } from "@mui/material";
 import GlobalModel from "@/models/global";
 import { plainToClass } from "class-transformer";
+import Vditor from "vditor";
+import "vditor/dist/index.css";
 
 const NoteContent = ({
   file,
@@ -16,10 +16,61 @@ const NoteContent = ({
   parentDir: FileModel | undefined;
 }) => {
   const [filename, setFilename] = useState("");
+
   useEffect(() => {
     setFilename(file.parseDisplayName());
-  }, [file]);
+    createVidtor({ value: file.content });
+  }, [file.path]);
 
+  const createVidtor = params => {
+    let { value } = params;
+    value = value ? value : " ";
+    const vditor = new Vditor("vditor", {
+      //Markdown上面的高度
+      height: document.body.clientHeight - 50,
+      mode: "wysiwyg", //及时渲染模式
+      toolbar: [
+        "upload",
+        "table",
+        "|",
+        "fullscreen",
+        "|",
+        "code-theme",
+        "content-theme",
+        "export",
+        "outline",
+        "|",
+        {
+          hotkey: "⌘-S",
+          name: "save",
+          tipPosition: "s",
+          tip: "保存",
+          className: "right",
+          icon: `<img style="height: 16px" src='https://img.58cdn.com.cn/escstatic/docs/imgUpload/idocs/save.svg'/>`,
+          click() {
+            // that.saveDoc();
+          }
+        }
+      ],
+      after() {
+        vditor.setValue(value);
+      },
+      blur() {
+        // that.saveDoc();
+      },
+      upload: {
+        accept: "image/*",
+        multiple: false,
+        filename(name) {
+          return name
+            .replace(/[^(a-zA-Z0-9\u4e00-\u9fa5\.)]/g, "")
+            .replace(/[\?\\/:|<>\*\[\]\(\)\$%\{\}@~]/g, "")
+            .replace("/\\s/g", "");
+        }
+      }
+    });
+    return vditor;
+  };
   const updateFileName = () => {
     if (!parentDir) {
       return;
@@ -70,10 +121,9 @@ const NoteContent = ({
           inputProps={{ "aria-label": "description" }}
         />
       </Box>
-      <SimpleMdeReact
-        value={file.content}
-        onChange={content => file.updateContent(content)}
-      />
+      <div>
+        <div id="vditor" />
+      </div>
     </Box>
   );
 };
