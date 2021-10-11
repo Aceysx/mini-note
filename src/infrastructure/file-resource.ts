@@ -1,9 +1,9 @@
 import { Event } from "../models/event";
+import { plainToClass } from "class-transformer";
+import FileModel from "@/models/file";
 
 const electron = window.require("electron");
 const { ipcRenderer } = electron;
-import { plainToClass } from "class-transformer";
-import FileModel from "@/models/file";
 
 export default class FileResource {
   public static fetchFilesByPath(path: string) {
@@ -18,5 +18,15 @@ export default class FileResource {
   static fetchFileByPath(path: string) {
     let data = FileResource.send(Event.FETCH_FILE_EVENT, path);
     return plainToClass(FileModel, data);
+  }
+
+  static updateFileContent(data: { path: string; content: string }) {
+    let file = FileResource.send(Event.MODIFY_FILE_CONTENT, data);
+    return plainToClass(FileModel, file);
+  }
+
+  static updateFileName(data: { newFileName: string; oldPath: string }) {
+    let file = FileResource.send(Event.MODIFY_FILE_NAME, data);
+    return plainToClass(FileModel, file);
   }
 }

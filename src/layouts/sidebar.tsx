@@ -12,13 +12,12 @@ import SendIcon from "@mui/icons-material/Send";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import { connect } from "umi";
-import { GlobalModelState, SiderbarState } from "@/models/global";
+import GlobalModel, { GlobalModelState, SiderbarState } from "@/models/global";
 import FileModel from "@/models/file";
 import FolderIcon from "@mui/icons-material/Folder";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 
 const Sidebar = ({
-  dispatch,
   siderbarState
 }: {
   dispatch: any;
@@ -33,8 +32,7 @@ const Sidebar = ({
 
   const clickDirItem = (file: FileModel | undefined) => {
     if (file) {
-      dispatch({
-        type: FileModel.actionType,
+      GlobalModel.dispatch.siderbarState({
         dirsOpenState: { ...dirsOpenState, [file.path]: !isOpen(file.path) },
         currentSelectedDirFile: file
       });
@@ -101,7 +99,7 @@ const Sidebar = ({
 
   return (
     <List
-      sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }}
+      sx={{ width: "100%", bgcolor: "background.paper" }}
       component="nav"
       aria-labelledby="nested-list-subheader"
       subheader={

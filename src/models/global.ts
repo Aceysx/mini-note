@@ -1,5 +1,6 @@
 import { Reducer } from "umi";
 import FileModel from "@/models/file";
+import { getDvaApp } from "@@/plugin-dva/exports";
 
 export interface SiderbarState {
   rootFile: FileModel | undefined;
@@ -8,9 +9,16 @@ export interface SiderbarState {
   currentEditFile: FileModel | undefined;
 }
 
+export interface MessageState {
+  severity?: "info" | "error" | "warning" | "success";
+  isOpen: boolean;
+  message?: string | undefined;
+}
+
 export interface GlobalModelState {
   workspace: string;
   siderbarState: SiderbarState;
+  messageState: MessageState;
 }
 
 export interface GlobalModelType {
@@ -19,6 +27,12 @@ export interface GlobalModelType {
   effects: {};
   reducers: {
     siderbarState: Reducer<GlobalModelState>;
+    messageState: Reducer<GlobalModelState>;
+  };
+  dispatch: {
+    message: Function;
+    notebook: Function;
+    siderbarState: Function;
   };
 }
 
@@ -31,6 +45,26 @@ const GlobalModel: GlobalModelType = {
       dirsOpenState: {},
       currentSelectedDirFile: undefined,
       currentEditFile: undefined
+    },
+    messageState: {
+      isOpen: false
+    }
+  },
+  dispatch: {
+    message: (data: MessageState) => {
+      getDvaApp()._store.dispatch({
+        type: "global/messageState",
+        ...data
+      });
+    },
+    notebook: () => {
+      FileModel.fetchFilesByPath("/Users/xinsi/Documents/PERSONAL/notebook");
+    },
+    siderbarState: (data: any) => {
+      getDvaApp()._store.dispatch({
+        type: "global/siderbarState",
+        ...data
+      });
     }
   },
   effects: {},
@@ -39,6 +73,12 @@ const GlobalModel: GlobalModelType = {
       return {
         ...state,
         ...{ siderbarState: { ...state.siderbarState, ...data } }
+      };
+    },
+    messageState(state: any, data: any): any {
+      return {
+        ...state,
+        ...{ messageState: { ...state.messageState, ...data } }
       };
     }
   }
