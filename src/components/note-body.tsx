@@ -36,7 +36,15 @@ const NoteBody = ({
         {currentSelectedDirFile
           ? currentSelectedDirFile
               .getSub()
-              .map(item => <FileCard file={item} selectFile={selectFile} />)
+              .map(item => (
+                <FileCard
+                  isSelected={
+                    !!currentEditFile && item.path === currentEditFile.path
+                  }
+                  file={item}
+                  selectFile={selectFile}
+                />
+              ))
           : ""}
       </Grid>
       <Grid item xs={9}>

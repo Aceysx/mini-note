@@ -8,14 +8,16 @@ import FileModel from "@/models/file";
 
 const FileCard = ({
   file,
-  selectFile
+  selectFile,
+  isSelected
 }: {
   file: FileModel;
   selectFile: Function;
+  isSelected: boolean;
 }) => {
   return (
     <Card
-      className={"file-card"}
+      className={`file-card ${isSelected ? "file-card-selected" : ""}`}
       variant={"outlined"}
       onClick={() => selectFile(file)}
     >
