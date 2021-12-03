@@ -1,6 +1,4 @@
 import React from "react";
-
-import ListSubheader from "@mui/material/ListSubheader";
 import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
@@ -44,24 +42,42 @@ const Sidebar = ({
       <Collapse in={open} timeout="auto" unmountOnExit>
         <List component="div" disablePadding>
           {subs.map(file => {
+            let subFiles = file.getSub().filter(item => !item.isDir());
+
             const node = (
-              <ListItemButton sx={{ pl: depth }} key={file.path}>
-                <ListItemIcon>
-                  {dirsOpenState[file.path] ? (
-                    <FolderOpenIcon />
-                  ) : (
-                    <FolderIcon />
-                  )}
-                </ListItemIcon>
-                <ListItemText
-                  onClick={() => clickDirItem(file)}
-                  primary={
-                    <span style={{ fontSize: 14 }}>
-                      {file.parseDisplayName()}
-                    </span>
-                  }
-                />
-              </ListItemButton>
+              <div>
+                <ListItemButton sx={{ pl: depth }} key={file.path}>
+                  <ListItemIcon>
+                    {dirsOpenState[file.path] ? (
+                      <FolderOpenIcon />
+                    ) : (
+                      <FolderIcon />
+                    )}
+                  </ListItemIcon>
+                  <ListItemText
+                    onClick={() => clickDirItem(file)}
+                    primary={
+                      <span style={{ fontSize: 14 }}>
+                        {file.parseDisplayName()}
+                      </span>
+                    }
+                  />
+                </ListItemButton>
+                {isOpen(file.path)
+                  ? subFiles.map(item => (
+                      <ListItemButton sx={{ pl: depth * 2 }} key={item.path}>
+                        <ListItemText
+                          onClick={() => FileModel.fetchEditFile(item.path)}
+                          primary={
+                            <span style={{ fontSize: 14 }}>
+                              {item.parseDisplayName()}
+                            </span>
+                          }
+                        />
+                      </ListItemButton>
+                    ))
+                  : ""}
+              </div>
             );
 
             let subDirs = file.getSub().filter(item => item.isDir());

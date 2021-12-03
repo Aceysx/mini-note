@@ -106,21 +106,6 @@ const NoteContent = ({
 
   return (
     <Box>
-      <Box
-        sx={{
-          width: "100%",
-          marginBottom: 1
-        }}
-      >
-        <Input
-          fullWidth
-          value={filename}
-          onChange={e => setFilename(e.target.value)}
-          onBlur={updateFileName}
-          onKeyPress={updateFileName}
-          inputProps={{ "aria-label": "description" }}
-        />
-      </Box>
       <div>
         <div id="vditor" />
       </div>
