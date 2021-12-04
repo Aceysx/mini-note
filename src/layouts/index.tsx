@@ -17,10 +17,11 @@ export default function() {
 
   return (
     <Grid container className="container">
-      <Grid item xs={3} style={{ background: "#fafafa" }}>
+      <Grid item xs={2} style={{ background: "#fafafa" }}>
+        <div style={{ height: 50 }}></div>
         <Sidebar />
       </Grid>
-      <Grid item xs={9} className={"bg-white"}>
+      <Grid item xs={10} className={"bg-white"}>
         <Content />
       </Grid>
       <MessageBody />

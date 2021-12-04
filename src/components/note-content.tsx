@@ -1,12 +1,11 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
 import FileModel from "@/models/file";
-import Box from "@mui/material/Box/Box";
-import { Input } from "@mui/material";
 import GlobalModel from "@/models/global";
 import { plainToClass } from "class-transformer";
 import Vditor from "vditor";
 import "vditor/dist/index.css";
+import "vditor/dist/index.min";
 
 const NoteContent = ({
   file,
@@ -15,10 +14,7 @@ const NoteContent = ({
   file: FileModel;
   parentDir: FileModel | undefined;
 }) => {
-  const [filename, setFilename] = useState("");
-
   useEffect(() => {
-    setFilename(file.parseDisplayName());
     createVidtor({ value: file.content });
   }, [file.path]);
 
@@ -29,13 +25,23 @@ const NoteContent = ({
       //Markdown上面的高度
       height: document.body.clientHeight - 50,
       mode: "wysiwyg", //及时渲染模式
+      icon: "material",
+      placeholder: "开始编辑内容...",
+      typewriterMode: true,
+      counter: {
+        enable: true,
+        type: "markdown"
+      },
+      input: (value: string) => file.updateContent(value),
+      outline: {
+        enable: true,
+        position: "left"
+      },
       toolbar: [
-        "upload",
         "table",
         "|",
         "fullscreen",
         "|",
-        "code-theme",
         "content-theme",
         "export",
         "outline",
@@ -54,9 +60,6 @@ const NoteContent = ({
       ],
       after() {
         vditor.setValue(value);
-      },
-      blur() {
-        // that.saveDoc();
       },
       upload: {
         accept: "image/*",
@@ -104,12 +107,6 @@ const NoteContent = ({
     FileModel.fetchEditFile(file.parseNewFileName(filename));
   };
 
-  return (
-    <Box>
-      <div>
-        <div id="vditor" />
-      </div>
-    </Box>
-  );
+  return <div id="vditor" />;
 };
 export default NoteContent;

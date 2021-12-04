@@ -14,6 +14,7 @@ import GlobalModel, { GlobalModelState, SiderbarState } from "@/models/global";
 import FileModel from "@/models/file";
 import FolderIcon from "@mui/icons-material/Folder";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
+import { ListSubheader } from "@mui/material";
 
 const Sidebar = ({
   siderbarState
@@ -106,7 +107,8 @@ const Sidebar = ({
       });
 
       return listDirs(
-        isOpen(rootFile.path),
+        // isOpen(rootFile.path),
+        true,
         subs.filter(item => item.isDir()),
         depth
       );
@@ -123,29 +125,26 @@ const Sidebar = ({
       className={"layout_scroll_hide"}
       component="nav"
       aria-labelledby="nested-list-subheader"
-      // subheader={
-      //   <ListSubheader component="div" style={{height: 50}}></ListSubheader>
-      // }
     >
-      <ListItemButton>
-        <ListItemIcon>
-          <SendIcon />
-        </ListItemIcon>
-        <ListItemText primary="Dashboard" />
-      </ListItemButton>
-      <ListItemButton>
-        <ListItemIcon>
-          <DraftsIcon />
-        </ListItemIcon>
-        <ListItemText primary="Setting" />
-      </ListItemButton>
-      <ListItemButton onClick={() => clickDirItem(rootFile)}>
-        <ListItemIcon>
-          <InboxIcon />
-        </ListItemIcon>
-        <ListItemText primary="NodeBook" />
-        {isOpen(rootFile?.path) ? <ExpandLess /> : <ExpandMore />}
-      </ListItemButton>
+      {/*<ListItemButton>*/}
+      {/*  <ListItemIcon>*/}
+      {/*    <SendIcon />*/}
+      {/*  </ListItemIcon>*/}
+      {/*  <ListItemText primary="Dashboard" />*/}
+      {/*</ListItemButton>*/}
+      {/*<ListItemButton>*/}
+      {/*  <ListItemIcon>*/}
+      {/*    <DraftsIcon />*/}
+      {/*  </ListItemIcon>*/}
+      {/*  <ListItemText primary="Setting" />*/}
+      {/*</ListItemButton>*/}
+      {/*<ListItemButton onClick={() => clickDirItem(rootFile)}>*/}
+      {/*  <ListItemIcon>*/}
+      {/*    <InboxIcon />*/}
+      {/*  </ListItemIcon>*/}
+      {/*  <ListItemText primary="NodeBook" />*/}
+      {/*  {isOpen(rootFile?.path) ? <ExpandLess /> : <ExpandMore />}*/}
+      {/*</ListItemButton>*/}
 
       {renderNoteBook()}
     </List>
