@@ -29,15 +29,29 @@ const Sidebar = ({
     | undefined
   >(undefined);
 
+  const [currentEditActionFile, setCurrentEditActionFile] = useState<
+    | {
+        parentFile: FileModel;
+        file: FileModel;
+        currentFileName: string;
+      }
+    | undefined
+  >(undefined);
+
   const [contextMenu, setContextMenu] = React.useState<{
     position: {
       mouseX: number;
       mouseY: number;
     };
+    parentFile: FileModel;
     file: FileModel;
   } | null>(null);
 
-  const handleContextMenu = (event: React.MouseEvent, file: FileModel) => {
+  const handleContextMenu = (
+    event: React.MouseEvent,
+    parentFile: FileModel,
+    file: FileModel
+  ) => {
     event.preventDefault();
     setContextMenu(
       contextMenu === null
@@ -46,6 +60,7 @@ const Sidebar = ({
               mouseY: event.clientY - 4,
               mouseX: event.clientX - 2
             },
+            parentFile,
             file
           }
         : null
@@ -71,6 +86,28 @@ const Sidebar = ({
     }
   };
 
+  const clickCreateFileOrDirMenu = (type: FileType) => {
+    const { file } = contextMenu;
+    handleClose();
+    GlobalModel.dispatch.siderbarState({
+      dirsOpenState: { ...dirsOpenState, [file.path]: true }
+    });
+    setCurrentCreateActionFile({
+      parentFile: file,
+      currentFileName: `Untitled${type === FileType.dir ? "" : ".md"}`,
+      type
+    });
+  };
+  const clickEditFileOrDirMenu = () => {
+    const { parentFile, file } = contextMenu;
+    handleClose();
+    setCurrentEditActionFile({
+      parentFile,
+      file,
+      currentFileName: file.parseDisplayName()
+    });
+  };
+
   const creatFile = (fileName: string) => {
     const { parentFile, type } = currentCreateActionFile;
     const newFilePath = _.join(parentFile.path, fileName);
@@ -81,7 +118,6 @@ const Sidebar = ({
         message: `${fileName} is exist in this directory`
       });
     }
-    console.log(newFilePath);
     FileModel.createFile(newFilePath, type);
     GlobalModel.dispatch.message({
       severity: "info",
@@ -91,21 +127,45 @@ const Sidebar = ({
     setCurrentCreateActionFile(undefined);
   };
 
-  const listDirs = (open: boolean, subs: FileModel[], depth: number) => {
+  const editFile = (fileName: string) => {
+    const { parentFile, file } = currentEditActionFile;
+    const newFilePath = file.parseNewFileName(fileName);
+    if (parentFile.hasSameSubFile(newFilePath)) {
+      return GlobalModel.dispatch.message({
+        severity: "error",
+        isOpen: true,
+        message: `${fileName} is exist in this directory`
+      });
+    }
+
+    file.updateFileName(fileName);
+    GlobalModel.dispatch.message({
+      severity: "info",
+      isOpen: true,
+      message: `edit file success`
+    });
+    setCurrentEditActionFile(undefined);
+  };
+
+  const listDirs = (
+    parentFile: FileModel,
+    open: boolean,
+    subs: FileModel[],
+    depth: number
+  ) => {
     return (
       <Collapse in={open} timeout="auto" unmountOnExit>
         <List component="div" disablePadding>
           {subs.map(file => {
             let subFiles = file.getSub().filter(item => !item.isDir());
-
             const node = (
               <div>
                 <ListItemButton
+                  onContextMenu={e => handleContextMenu(e, parentFile, file)}
+                  style={{ cursor: "context-menu" }}
                   sx={{ pl: depth }}
                   key={file.path}
                   onClick={() => clickDirItem(file)}
-                  onContextMenu={e => handleContextMenu(e, file)}
-                  style={{ cursor: "context-menu" }}
                 >
                   <ListItemIcon>
                     {dirsOpenState[file.path] ? (
@@ -114,13 +174,27 @@ const Sidebar = ({
                       <FolderIcon />
                     )}
                   </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <span style={{ fontSize: 14 }}>
-                        {file.parseDisplayName()}
-                      </span>
-                    }
-                  />
+                  {currentEditActionFile &&
+                  currentEditActionFile.file.path === file.path ? (
+                    <Input
+                      autoFocus={true}
+                      defaultValue={currentEditActionFile.currentFileName}
+                      onKeyUp={e => {
+                        if (e.keyCode === 13) {
+                          editFile(e.target.value);
+                        }
+                      }}
+                      inputProps={{ "aria-label": "description" }}
+                    />
+                  ) : (
+                    <ListItemText
+                      primary={
+                        <span style={{ fontSize: 14 }}>
+                          {file.parseDisplayName()}
+                        </span>
+                      }
+                    />
+                  )}
                 </ListItemButton>
                 <Menu
                   open={contextMenu !== null}
@@ -136,26 +210,27 @@ const Sidebar = ({
                       : undefined
                   }
                 >
-                  <MenuItem onClick={handleClose}>Edit</MenuItem>
+                  <MenuItem onClick={() => clickEditFileOrDirMenu()}>
+                    Edit
+                  </MenuItem>
                   <MenuItem onClick={handleClose}>Delete</MenuItem>
 
                   <MenuItem
+                    disabled={!(contextMenu && contextMenu.file.isDir())}
                     onClick={() => {
-                      const { file } = contextMenu;
-                      handleClose();
-                      GlobalModel.dispatch.siderbarState({
-                        dirsOpenState: { ...dirsOpenState, [file.path]: true }
-                      });
-                      setCurrentCreateActionFile({
-                        parentFile: file,
-                        currentFileName: "Untitled.md",
-                        type: FileType.file
-                      });
+                      clickCreateFileOrDirMenu(FileType.file);
                     }}
                   >
                     New File
                   </MenuItem>
-                  <MenuItem onClick={handleClose}>New Directory</MenuItem>
+                  <MenuItem
+                    disabled={!(contextMenu && contextMenu.file.isDir())}
+                    onClick={() => {
+                      clickCreateFileOrDirMenu(FileType.dir);
+                    }}
+                  >
+                    New Directory
+                  </MenuItem>
                 </Menu>
                 {currentCreateActionFile &&
                 currentCreateActionFile.parentFile.path === file.path ? (
@@ -176,15 +251,34 @@ const Sidebar = ({
 
                 {isOpen(file.path)
                   ? subFiles.map(item => (
-                      <ListItemButton sx={{ pl: depth + 2 }} key={item.path}>
-                        <ListItemText
-                          onClick={() => FileModel.fetchEditFile(item.path)}
-                          primary={
-                            <span style={{ fontSize: 14 }}>
-                              {item.parseDisplayName()}
-                            </span>
-                          }
-                        />
+                      <ListItemButton
+                        onContextMenu={e => handleContextMenu(e, file, item)}
+                        style={{ cursor: "context-menu" }}
+                        sx={{ pl: depth + 2 }}
+                        key={item.path}
+                      >
+                        {currentEditActionFile &&
+                        currentEditActionFile.file.path === item.path ? (
+                          <Input
+                            autoFocus={true}
+                            defaultValue={currentEditActionFile.currentFileName}
+                            onKeyUp={e => {
+                              if (e.keyCode === 13) {
+                                editFile(e.target.value);
+                              }
+                            }}
+                            inputProps={{ "aria-label": "description" }}
+                          />
+                        ) : (
+                          <ListItemText
+                            onClick={() => FileModel.fetchEditFile(item.path)}
+                            primary={
+                              <span style={{ fontSize: 14 }}>
+                                {item.parseDisplayName()}
+                              </span>
+                            }
+                          />
+                        )}
                       </ListItemButton>
                     ))
                   : ""}
@@ -198,7 +292,7 @@ const Sidebar = ({
                   <List component="div" disablePadding>
                     {node}
                   </List>
-                  {listDirs(isOpen(file.path), subDirs, depth + 2)}
+                  {listDirs(file, isOpen(file.path), subDirs, depth + 2)}
                 </Collapse>
               );
             }
@@ -218,6 +312,7 @@ const Sidebar = ({
 
       return listDirs(
         // isOpen(rootFile.path),
+        rootFile,
         true,
         subs.filter(item => item.isDir()),
         depth

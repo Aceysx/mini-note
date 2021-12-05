@@ -104,6 +104,7 @@ const Files = {
   createFileOrDir: (_path, type) => {
     if (type === "dir") {
       fs.mkdirSync(_path);
+      return;
     }
     fs.writeFileSync(_path, "");
   },

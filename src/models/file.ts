@@ -4,8 +4,8 @@ import * as PATH from "path";
 import { deserializeArray } from "class-transformer";
 
 export enum FileType {
-  dir,
-  file
+  dir = "dir",
+  file = "file"
 }
 
 export default class FileModel {
@@ -36,7 +36,7 @@ export default class FileModel {
   }
 
   public isDir(): boolean {
-    return this.type.toString() === FileType[0];
+    return this.type === FileType.dir;
   }
 
   public parseDisplayName(): string {
