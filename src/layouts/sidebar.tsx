@@ -66,7 +66,7 @@ const Sidebar = ({
                 </ListItemButton>
                 {isOpen(file.path)
                   ? subFiles.map(item => (
-                      <ListItemButton sx={{ pl: depth * 2 }} key={item.path}>
+                      <ListItemButton sx={{ pl: depth + 2 }} key={item.path}>
                         <ListItemText
                           onClick={() => FileModel.fetchEditFile(item.path)}
                           primary={
@@ -119,6 +119,7 @@ const Sidebar = ({
     <List
       sx={{
         width: "100%",
+        paddingTop: "50px",
         height: document.body.clientHeight,
         overflowY: "scroll"
       }}

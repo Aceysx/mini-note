@@ -22,7 +22,7 @@ const NoteContent = ({
     let { value } = params;
     value = value ? value : " ";
     const vditor = new Vditor("vditor", {
-      //Markdown上面的高度
+      //Markdown上面的高度,解决点击大纲不跳转问题
       height: document.body.clientHeight - 50,
       mode: "wysiwyg", //及时渲染模式
       icon: "material",
@@ -33,10 +33,6 @@ const NoteContent = ({
         type: "markdown"
       },
       input: (value: string) => file.updateContent(value),
-      outline: {
-        enable: true,
-        position: "left"
-      },
       toolbar: [
         "table",
         "|",
@@ -44,19 +40,7 @@ const NoteContent = ({
         "|",
         "content-theme",
         "export",
-        "outline",
-        "|",
-        {
-          hotkey: "⌘-S",
-          name: "save",
-          tipPosition: "s",
-          tip: "保存",
-          className: "right",
-          icon: `<img style="height: 16px" src='https://img.58cdn.com.cn/escstatic/docs/imgUpload/idocs/save.svg'/>`,
-          click() {
-            // that.saveDoc();
-          }
-        }
+        "outline"
       ],
       after() {
         vditor.setValue(value);
