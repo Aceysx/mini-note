@@ -69,4 +69,16 @@ export default class FileModel {
   public parseNewFileName(newFileName: string): string {
     return PATH.join(PATH.dirname(this.path), newFileName);
   }
+
+  public hasSameSubFile(filePath: string): boolean {
+    return !!this.getSub().find(file => file.path === filePath);
+  }
+
+  public static createFile(filePath: string, type: FileType) {
+    let fileModel = FileResource.createFileOrDir({
+      path: filePath,
+      type: type.toString()
+    });
+    publish(Event.MODIFY_FILE_NAME, fileModel);
+  }
 }

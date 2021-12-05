@@ -25,6 +25,10 @@ export default class FileResource {
     return plainToClass(FileModel, file);
   }
 
+  static createFileOrDir(data: { path: string; type: string }) {
+    FileResource.send(Event.CREATE_FILE_OR_DIR, data);
+  }
+
   static updateFileName(data: { newFileName: string; oldPath: string }) {
     let file = FileResource.send(Event.MODIFY_FILE_NAME, data);
     return plainToClass(FileModel, file);
