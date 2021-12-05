@@ -66,6 +66,11 @@ export default class FileModel {
     publish(Event.MODIFY_FILE_NAME, {});
   }
 
+  public deleteFile() {
+    FileResource.deleteFile({ path: this.path, type: this.type.toString() });
+    publish(Event.DELETE_FILE_OR_DIR, { filePath: this.path });
+  }
+
   public parseNewFileName(newFileName: string): string {
     return PATH.join(PATH.dirname(this.path), newFileName);
   }

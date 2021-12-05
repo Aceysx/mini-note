@@ -25,6 +25,10 @@ export default class FileResource {
     return plainToClass(FileModel, file);
   }
 
+  static deleteFile(data: { path: string; type: string }) {
+    FileResource.send(Event.DELETE_FILE_OR_DIR, data);
+  }
+
   static createFileOrDir(data: { path: string; type: string }) {
     FileResource.send(Event.CREATE_FILE_OR_DIR, data);
   }

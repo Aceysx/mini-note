@@ -8,7 +8,8 @@ export enum Event {
   CREATE_FILE_OR_DIR = "CREATE_FILE_OR_DIR",
   FETCH_FILE_EVENT = "FETCH_FILE_EVENT",
   MODIFY_FILE_CONTENT = "MODIFY_FILE_CONTENT",
-  MODIFY_FILE_NAME = "MODIFY_FILE_NAME"
+  MODIFY_FILE_NAME = "MODIFY_FILE_NAME",
+  DELETE_FILE_OR_DIR = "DELETE_FILE_OR_DIR"
 }
 
 export const emitter = mitt();
@@ -33,4 +34,22 @@ emitter.on(Event.FETCH_FILE_EVENT, fileMode => {
 
 emitter.on(Event.MODIFY_FILE_NAME, () => {
   GlobalModel.dispatch.notebook();
+});
+
+emitter.on(Event.DELETE_FILE_OR_DIR, file => {
+  GlobalModel.dispatch.notebook();
+  let {
+    currentSelectedDirFile,
+    currentEditFile
+  } = getDvaApp()._store.getState().global.siderbarState;
+  if (currentSelectedDirFile && file.filePath === currentSelectedDirFile.path) {
+    currentSelectedDirFile = undefined;
+  }
+  if (currentEditFile && currentEditFile.path.includes(file.filePath)) {
+    currentEditFile = undefined;
+  }
+  GlobalModel.dispatch.siderbarState({
+    currentSelectedDirFile,
+    currentEditFile
+  });
 });

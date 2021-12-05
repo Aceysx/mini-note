@@ -10,7 +10,15 @@ import FileModel, { FileType } from "@/models/file";
 import FolderIcon from "@mui/icons-material/Folder";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import MenuItem from "@mui/material/MenuItem";
-import { Input, Menu } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  Input,
+  Menu
+} from "@mui/material";
 import _ from "path";
 
 const Sidebar = ({
@@ -20,6 +28,9 @@ const Sidebar = ({
   siderbarState: SiderbarState;
 }) => {
   const { rootFile, dirsOpenState } = siderbarState;
+  const [deleteFile, setDeleteFile] = useState<FileModel | undefined>(
+    undefined
+  );
   const [currentCreateActionFile, setCurrentCreateActionFile] = useState<
     | {
         parentFile: FileModel;
@@ -213,7 +224,14 @@ const Sidebar = ({
                   <MenuItem onClick={() => clickEditFileOrDirMenu()}>
                     Edit
                   </MenuItem>
-                  <MenuItem onClick={handleClose}>Delete</MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      setDeleteFile(contextMenu.file);
+                      handleClose();
+                    }}
+                  >
+                    Delete
+                  </MenuItem>
 
                   <MenuItem
                     disabled={!(contextMenu && contextMenu.file.isDir())}
@@ -353,6 +371,30 @@ const Sidebar = ({
       {/*</ListItemButton>*/}
 
       {renderNoteBook()}
+      <Dialog
+        open={!!deleteFile}
+        onClose={() => setDeleteFile(undefined)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure want to delete this file?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteFile(undefined)}>Disagree</Button>
+          <Button
+            onClick={() => {
+              deleteFile && deleteFile.deleteFile();
+              setDeleteFile(undefined);
+            }}
+            autoFocus
+          >
+            Agree
+          </Button>
+        </DialogActions>
+      </Dialog>
     </List>
   );
 };
