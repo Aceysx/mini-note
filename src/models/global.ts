@@ -58,7 +58,10 @@ const GlobalModel: GlobalModelType = {
       });
     },
     notebook: () => {
-      FileModel.fetchFilesByPath("/Users/xinsi/Documents/PERSONAL/notebook");
+      const defaultPath = "/Users/xinsi/Documents/PERSONAL/notebook";
+      FileModel.fetchFilesByPath(
+        localStorage.getItem("note_workspace") || defaultPath
+      );
     },
     siderbarState: (data: any) => {
       getDvaApp()._store.dispatch({

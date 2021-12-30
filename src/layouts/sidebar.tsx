@@ -16,8 +16,9 @@ import {
   DialogActions,
   DialogContent,
   DialogContentText,
-  Input,
-  Menu
+  DialogTitle,
+  Menu,
+  TextField
 } from "@mui/material";
 import _ from "path";
 
@@ -31,6 +32,17 @@ const Sidebar = ({
   const [deleteFile, setDeleteFile] = useState<FileModel | undefined>(
     undefined
   );
+  const [currentActionFile, setCurrentActionFile] = useState<
+    | {
+        parentFile: FileModel;
+        currentFile: FileModel | undefined;
+        type: FileType;
+        action: "create" | "edit";
+        tempName: string | undefined;
+      }
+    | undefined
+  >(undefined);
+
   const [currentCreateActionFile, setCurrentCreateActionFile] = useState<
     | {
         parentFile: FileModel;
@@ -103,24 +115,49 @@ const Sidebar = ({
     GlobalModel.dispatch.siderbarState({
       dirsOpenState: { ...dirsOpenState, [file.path]: true }
     });
-    setCurrentCreateActionFile({
+    setCurrentActionFile({
       parentFile: file,
-      currentFileName: `Untitled${type === FileType.dir ? "" : ".md"}`,
-      type
-    });
-  };
-  const clickEditFileOrDirMenu = () => {
-    const { parentFile, file } = contextMenu;
-    handleClose();
-    setCurrentEditActionFile({
-      parentFile,
-      file,
-      currentFileName: file.parseDisplayName()
+      currentFile: undefined,
+      tempName: `Untitled${type === FileType.dir ? "" : ".md"}`,
+      type,
+      action: "create"
     });
   };
 
-  const creatFile = (fileName: string) => {
-    const { parentFile, type } = currentCreateActionFile;
+  const clickEditFileOrDirMenu = () => {
+    const { parentFile, file } = contextMenu;
+    handleClose();
+    setCurrentActionFile({
+      parentFile,
+      currentFile: file,
+      tempName: file.parseDisplayName(),
+      type: file.type,
+      action: "edit"
+    });
+  };
+
+  const createOrEditFile = () => {
+    // @ts-ignore
+    const {
+      tempName,
+      parentFile,
+      currentFile,
+      type,
+      action
+    } = currentActionFile;
+    if (action === "create") {
+      creatFile(tempName, parentFile, type);
+    } else if (action === "edit") {
+      editFile(tempName, parentFile, currentFile);
+    }
+    setCurrentActionFile(undefined);
+  };
+
+  const creatFile = (
+    fileName: string,
+    parentFile: FileModel,
+    type: FileType
+  ) => {
     const newFilePath = _.join(parentFile.path, fileName);
     if (parentFile.hasSameSubFile(newFilePath)) {
       return GlobalModel.dispatch.message({
@@ -138,8 +175,11 @@ const Sidebar = ({
     setCurrentCreateActionFile(undefined);
   };
 
-  const editFile = (fileName: string) => {
-    const { parentFile, file } = currentEditActionFile;
+  const editFile = (
+    fileName: string,
+    parentFile: FileModel,
+    file: FileModel
+  ) => {
     const newFilePath = file.parseNewFileName(fileName);
     if (parentFile.hasSameSubFile(newFilePath)) {
       return GlobalModel.dispatch.message({
@@ -185,87 +225,14 @@ const Sidebar = ({
                       <FolderIcon />
                     )}
                   </ListItemIcon>
-                  {currentEditActionFile &&
-                  currentEditActionFile.file.path === file.path ? (
-                    <Input
-                      autoFocus={true}
-                      defaultValue={currentEditActionFile.currentFileName}
-                      onKeyUp={e => {
-                        if (e.keyCode === 13) {
-                          editFile(e.target.value);
-                        }
-                      }}
-                      inputProps={{ "aria-label": "description" }}
-                    />
-                  ) : (
-                    <ListItemText
-                      primary={
-                        <span style={{ fontSize: 14 }}>
-                          {file.parseDisplayName()}
-                        </span>
-                      }
-                    />
-                  )}
-                </ListItemButton>
-                <Menu
-                  open={contextMenu !== null}
-                  onClose={handleClose}
-                  anchorReference="anchorPosition"
-                  aria-haspopup="true"
-                  anchorPosition={
-                    contextMenu !== null
-                      ? {
-                          top: contextMenu.position.mouseY,
-                          left: contextMenu.position.mouseX
-                        }
-                      : undefined
-                  }
-                >
-                  <MenuItem onClick={() => clickEditFileOrDirMenu()}>
-                    Edit
-                  </MenuItem>
-                  <MenuItem
-                    onClick={() => {
-                      setDeleteFile(contextMenu.file);
-                      handleClose();
-                    }}
-                  >
-                    Delete
-                  </MenuItem>
-
-                  <MenuItem
-                    disabled={!(contextMenu && contextMenu.file.isDir())}
-                    onClick={() => {
-                      clickCreateFileOrDirMenu(FileType.file);
-                    }}
-                  >
-                    New File
-                  </MenuItem>
-                  <MenuItem
-                    disabled={!(contextMenu && contextMenu.file.isDir())}
-                    onClick={() => {
-                      clickCreateFileOrDirMenu(FileType.dir);
-                    }}
-                  >
-                    New Directory
-                  </MenuItem>
-                </Menu>
-                {currentCreateActionFile &&
-                currentCreateActionFile.parentFile.path === file.path ? (
-                  <Input
-                    autoFocus={true}
-                    defaultValue={currentCreateActionFile.currentFileName}
-                    style={{ marginLeft: (depth + 2) * 8 }}
-                    onKeyUp={e => {
-                      if (e.keyCode === 13) {
-                        creatFile(e.target.value);
-                      }
-                    }}
-                    inputProps={{ "aria-label": "description" }}
+                  <ListItemText
+                    primary={
+                      <span style={{ fontSize: 14 }}>
+                        {file.parseDisplayName()}
+                      </span>
+                    }
                   />
-                ) : (
-                  ""
-                )}
+                </ListItemButton>
 
                 {isOpen(file.path)
                   ? subFiles.map(item => (
@@ -275,28 +242,14 @@ const Sidebar = ({
                         sx={{ pl: depth + 2 }}
                         key={item.path}
                       >
-                        {currentEditActionFile &&
-                        currentEditActionFile.file.path === item.path ? (
-                          <Input
-                            autoFocus={true}
-                            defaultValue={currentEditActionFile.currentFileName}
-                            onKeyUp={e => {
-                              if (e.keyCode === 13) {
-                                editFile(e.target.value);
-                              }
-                            }}
-                            inputProps={{ "aria-label": "description" }}
-                          />
-                        ) : (
-                          <ListItemText
-                            onClick={() => FileModel.fetchEditFile(item.path)}
-                            primary={
-                              <span style={{ fontSize: 14 }}>
-                                {item.parseDisplayName()}
-                              </span>
-                            }
-                          />
-                        )}
+                        <ListItemText
+                          onClick={() => FileModel.fetchEditFile(item.path)}
+                          primary={
+                            <span style={{ fontSize: 14 }}>
+                              {item.parseDisplayName()}
+                            </span>
+                          }
+                        />
                       </ListItemButton>
                     ))
                   : ""}
@@ -332,7 +285,7 @@ const Sidebar = ({
         // isOpen(rootFile.path),
         rootFile,
         true,
-        subs.filter(item => item.isDir()),
+        subs,
         depth
       );
     }
@@ -350,27 +303,129 @@ const Sidebar = ({
       component="nav"
       aria-labelledby="nested-list-subheader"
     >
-      {/*<ListItemButton>*/}
-      {/*  <ListItemIcon>*/}
-      {/*    <SendIcon />*/}
-      {/*  </ListItemIcon>*/}
-      {/*  <ListItemText primary="Dashboard" />*/}
-      {/*</ListItemButton>*/}
-      {/*<ListItemButton>*/}
-      {/*  <ListItemIcon>*/}
-      {/*    <DraftsIcon />*/}
-      {/*  </ListItemIcon>*/}
-      {/*  <ListItemText primary="Setting" />*/}
-      {/*</ListItemButton>*/}
-      {/*<ListItemButton onClick={() => clickDirItem(rootFile)}>*/}
-      {/*  <ListItemIcon>*/}
-      {/*    <InboxIcon />*/}
-      {/*  </ListItemIcon>*/}
-      {/*  <ListItemText primary="NodeBook" />*/}
-      {/*  {isOpen(rootFile?.path) ? <ExpandLess /> : <ExpandMore />}*/}
-      {/*</ListItemButton>*/}
-
+      <ListItemButton
+        onContextMenu={e => handleContextMenu(e, rootFile, rootFile)}
+      >
+        {/*  <ListItemIcon>*/}
+        {/*    <SendIcon />*/}
+        {/*  </ListItemIcon>*/}
+        {/*  <ListItemText primary="Dashboard" />*/}
+        {/*</ListItemButton>*/}
+        {/*<ListItemButton>*/}
+        {/*  <ListItemIcon>*/}
+        {/*    <DraftsIcon />*/}
+        {/*  </ListItemIcon>*/}
+        {/*  <ListItemText primary="Setting" />*/}
+        {/*</ListItemButton>*/}
+        {/*<ListItemButton onClick={() => clickDirItem(rootFile)}>*/}
+        {/*  <ListItemIcon>*/}
+        {/*    <InboxIcon />*/}
+        {/*  </ListItemIcon>*/}
+        <ListItemIcon>
+          {rootFile && dirsOpenState[rootFile.path] ? (
+            <FolderOpenIcon />
+          ) : (
+            <FolderIcon />
+          )}
+        </ListItemIcon>
+        <ListItemText primary={rootFile && rootFile.parseDisplayName()} />
+      </ListItemButton>
       {renderNoteBook()}
+      {rootFile &&
+        rootFile
+          .getSub()
+          .filter(item => !item.isDir())
+          .map(file => (
+            <ListItemButton
+              onContextMenu={e => handleContextMenu(e, rootFile, file)}
+              style={{ cursor: "context-menu" }}
+              sx={{ pl: 3 }}
+              key={file.path}
+              onClick={() => FileModel.fetchEditFile(file.path)}
+            >
+              <ListItemText
+                primary={
+                  <span style={{ fontSize: 14 }}>
+                    {file.parseDisplayName()}
+                  </span>
+                }
+              />
+            </ListItemButton>
+          ))}
+      <Menu
+        open={contextMenu !== null}
+        onClose={handleClose}
+        anchorReference="anchorPosition"
+        aria-haspopup="true"
+        anchorPosition={
+          contextMenu !== null
+            ? {
+                top: contextMenu.position.mouseY,
+                left: contextMenu.position.mouseX
+              }
+            : undefined
+        }
+      >
+        <MenuItem onClick={() => clickEditFileOrDirMenu()}>Edit</MenuItem>
+        <MenuItem
+          onClick={() => {
+            setDeleteFile(contextMenu.file);
+            handleClose();
+          }}
+        >
+          Delete
+        </MenuItem>
+
+        <MenuItem
+          disabled={!(contextMenu && contextMenu.file.isDir())}
+          onClick={() => {
+            clickCreateFileOrDirMenu(FileType.file);
+          }}
+        >
+          New File
+        </MenuItem>
+        <MenuItem
+          disabled={!(contextMenu && contextMenu.file.isDir())}
+          onClick={() => {
+            clickCreateFileOrDirMenu(FileType.dir);
+          }}
+        >
+          New Directory
+        </MenuItem>
+      </Menu>
+
+      <Dialog
+        open={!!currentActionFile}
+        onClose={() => setCurrentActionFile(undefined)}
+      >
+        <DialogTitle>
+          File {currentActionFile && currentActionFile.action}
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="fileName"
+            value={currentActionFile && currentActionFile.tempName}
+            onChange={e =>
+              setCurrentActionFile({
+                ...currentActionFile,
+                tempName: e.target.value
+              })
+            }
+            type="text"
+            fullWidth
+            variant="standard"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCurrentActionFile(undefined)}>
+            Cancel
+          </Button>
+          <Button onClick={createOrEditFile}>Confirm</Button>
+        </DialogActions>
+      </Dialog>
+
       <Dialog
         open={!!deleteFile}
         onClose={() => setDeleteFile(undefined)}
@@ -379,11 +434,12 @@ const Sidebar = ({
       >
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Are you sure want to delete this file?
+            Are you sure want to delete this file[
+            {deleteFile?.parseDisplayName()}]?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteFile(undefined)}>Disagree</Button>
+          <Button onClick={() => setDeleteFile(undefined)}>Cancel</Button>
           <Button
             onClick={() => {
               deleteFile && deleteFile.deleteFile();
@@ -391,7 +447,7 @@ const Sidebar = ({
             }}
             autoFocus
           >
-            Agree
+            Confirm
           </Button>
         </DialogActions>
       </Dialog>
