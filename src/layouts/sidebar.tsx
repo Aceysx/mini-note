@@ -1,15 +1,14 @@
 import React, { useState } from "react";
 import List from "@mui/material/List";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import Collapse from "@mui/material/Collapse";
 import { connect } from "umi";
 import GlobalModel, { GlobalModelState, SiderbarState } from "@/models/global";
 import FileModel, { FileType } from "@/models/file";
 import FolderIcon from "@mui/icons-material/Folder";
-import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import MenuItem from "@mui/material/MenuItem";
+import { useJupiterNestedMenuStyles } from "@mui-treasury/styles/nestedMenu/gatsby";
+import NestedMenu from "@mui-treasury/components/menu/nested";
+import { useFadedShadowStyles } from "@mui-treasury/styles/shadow/faded";
+
 import {
   Button,
   Dialog,
@@ -95,15 +94,9 @@ const Sidebar = ({
     setContextMenu(null);
   };
 
-  const isOpen = (path: string): boolean => {
-    // @ts-ignore
-    return dirsOpenState[path];
-  };
-
   const clickDirItem = (file: FileModel | undefined) => {
     if (file) {
       GlobalModel.dispatch.siderbarState({
-        dirsOpenState: { ...dirsOpenState, [file.path]: !isOpen(file.path) },
         currentSelectedDirFile: file
       });
     }
@@ -112,9 +105,6 @@ const Sidebar = ({
   const clickCreateFileOrDirMenu = (type: FileType) => {
     const { file } = contextMenu;
     handleClose();
-    GlobalModel.dispatch.siderbarState({
-      dirsOpenState: { ...dirsOpenState, [file.path]: true }
-    });
     setCurrentActionFile({
       parentFile: file,
       currentFile: undefined,
@@ -198,104 +188,76 @@ const Sidebar = ({
     setCurrentEditActionFile(undefined);
   };
 
-  const listDirs = (
-    parentFile: FileModel,
-    open: boolean,
-    subs: FileModel[],
-    depth: number
-  ) => {
-    return (
-      <Collapse in={open} timeout="auto" unmountOnExit>
-        <List component="div" disablePadding>
-          {subs.map(file => {
-            let subFiles = file.getSub().filter(item => !item.isDir());
-            const node = (
-              <div>
-                <ListItemButton
-                  onContextMenu={e => handleContextMenu(e, parentFile, file)}
-                  style={{ cursor: "context-menu" }}
-                  sx={{ pl: depth }}
-                  key={file.path}
-                  onClick={() => clickDirItem(file)}
-                >
-                  <ListItemIcon>
-                    {dirsOpenState[file.path] ? (
-                      <FolderOpenIcon />
-                    ) : (
-                      <FolderIcon />
-                    )}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <span style={{ fontSize: 14 }}>
-                        {file.parseDisplayName()}
-                      </span>
-                    }
-                  />
-                </ListItemButton>
+  const getSubMenus = (parentFile: FileModel) => {
+    const dirMenus: [] = [],
+      files: [] = [];
+    parentFile.getSub().forEach(item => {
+      if (item.isDir()) {
+        const isEmpty = item.getSub().length === 0;
 
-                {isOpen(file.path)
-                  ? subFiles.map(item => (
-                      <ListItemButton
-                        onContextMenu={e => handleContextMenu(e, file, item)}
-                        style={{ cursor: "context-menu" }}
-                        sx={{ pl: depth + 2 }}
-                        key={item.path}
-                      >
-                        <ListItemText
-                          onClick={() => FileModel.fetchEditFile(item.path)}
-                          primary={
-                            <span style={{ fontSize: 14 }}>
-                              {item.parseDisplayName()}
-                            </span>
-                          }
-                        />
-                      </ListItemButton>
-                    ))
-                  : ""}
-              </div>
-            );
-
-            let subDirs = file.getSub().filter(item => item.isDir());
-            if (subDirs.length > 0) {
-              return (
-                <Collapse in={open} timeout="auto" unmountOnExit>
-                  <List component="div" disablePadding>
-                    {node}
-                  </List>
-                  {listDirs(file, isOpen(file.path), subDirs, depth + 2)}
-                </Collapse>
-              );
-            }
-            return node;
-          })}
-        </List>
-      </Collapse>
-    );
+        const dirComponent = (
+          <span
+            onContextMenu={e => handleContextMenu(e, parentFile, item)}
+            style={{ width: "100%" }}
+            onClick={() => clickDirItem(item)}
+          >
+            <FolderIcon style={{ position: "absolute", fontSize: "1.2em" }} />
+            <span style={{ paddingLeft: "25px" }}>
+              {item.parseDisplayName()}
+            </span>
+          </span>
+        );
+        if (isEmpty) {
+          dirMenus.push({
+            key: item.path,
+            label: dirComponent
+          });
+        } else {
+          dirMenus.push({
+            key: item.path,
+            label: dirComponent,
+            subMenus: getSubMenus(item)
+          });
+        }
+      } else {
+        const component = (
+          <span
+            style={{ width: "100%" }}
+            onContextMenu={e => handleContextMenu(e, item, item)}
+            onClick={() => FileModel.fetchEditFile(item.path)}
+          >
+            {item.parseDisplayName()}
+          </span>
+        );
+        files.push({ key: item.path, label: component });
+      }
+    });
+    return [...dirMenus, ...files];
   };
 
-  const renderNoteBook = () => {
-    const depth = 3;
+  const render = () => {
+    const data = [];
     if (rootFile && rootFile.isDir()) {
-      let subs = rootFile.getSub().filter((file: FileModel, i, o) => {
-        return file.isDir();
-      });
-
-      return listDirs(
-        // isOpen(rootFile.path),
-        rootFile,
-        true,
-        subs,
-        depth
+      const item = (
+        <span style={{ width: "100%" }} onClick={() => clickDirItem(rootFile)}>
+          {rootFile.parseDisplayName()}
+        </span>
       );
-    }
-  };
 
+      const root = {
+        key: rootFile.path,
+        label: item,
+        subMenus: getSubMenus(rootFile)
+      };
+      data.push(root);
+    }
+    return data;
+  };
   return (
     <List
       sx={{
         width: "100%",
-        paddingTop: "50px",
+        paddingTop: "50px!important",
         height: document.body.clientHeight,
         overflowY: "scroll"
       }}
@@ -303,60 +265,26 @@ const Sidebar = ({
       component="nav"
       aria-labelledby="nested-list-subheader"
     >
-      <ListItemButton
-        onContextMenu={e => handleContextMenu(e, rootFile, rootFile)}
-      >
-        {/*  <ListItemIcon>*/}
-        {/*    <SendIcon />*/}
-        {/*  </ListItemIcon>*/}
-        {/*  <ListItemText primary="Dashboard" />*/}
-        {/*</ListItemButton>*/}
-        {/*<ListItemButton>*/}
-        {/*  <ListItemIcon>*/}
-        {/*    <DraftsIcon />*/}
-        {/*  </ListItemIcon>*/}
-        {/*  <ListItemText primary="Setting" />*/}
-        {/*</ListItemButton>*/}
-        {/*<ListItemButton onClick={() => clickDirItem(rootFile)}>*/}
-        {/*  <ListItemIcon>*/}
-        {/*    <InboxIcon />*/}
-        {/*  </ListItemIcon>*/}
-        <ListItemIcon>
-          {rootFile && dirsOpenState[rootFile.path] ? (
-            <FolderOpenIcon />
-          ) : (
-            <FolderIcon />
-          )}
-        </ListItemIcon>
-        <ListItemText primary={rootFile && rootFile.parseDisplayName()} />
-      </ListItemButton>
-      {renderNoteBook()}
-      {rootFile &&
-        rootFile
-          .getSub()
-          .filter(item => !item.isDir())
-          .map(file => (
-            <ListItemButton
-              onContextMenu={e => handleContextMenu(e, rootFile, file)}
-              style={{ cursor: "context-menu" }}
-              sx={{ pl: 3 }}
-              key={file.path}
-              onClick={() => FileModel.fetchEditFile(file.path)}
-            >
-              <ListItemText
-                primary={
-                  <span style={{ fontSize: 14 }}>
-                    {file.parseDisplayName()}
-                  </span>
-                }
-              />
-            </ListItemButton>
-          ))}
+      <NestedMenu
+        openKeys={dirsOpenState}
+        onOpenKeysChange={key => {
+          if (key[0] && !dirsOpenState.includes(key[0])) {
+            GlobalModel.dispatch.siderbarState({
+              dirsOpenState: [...dirsOpenState, key[0]]
+            });
+          }
+        }}
+        menus={render()}
+        useStyles={useJupiterNestedMenuStyles}
+      />
+
       <Menu
         open={contextMenu !== null}
         onClose={handleClose}
+        keepMounted
         anchorReference="anchorPosition"
         aria-haspopup="true"
+        style={useFadedShadowStyles()}
         anchorPosition={
           contextMenu !== null
             ? {
@@ -366,14 +294,16 @@ const Sidebar = ({
             : undefined
         }
       >
-        <MenuItem onClick={() => clickEditFileOrDirMenu()}>Edit</MenuItem>
+        <MenuItem onClick={() => clickEditFileOrDirMenu()}>
+          <div>Edit</div>
+        </MenuItem>
         <MenuItem
           onClick={() => {
             setDeleteFile(contextMenu.file);
             handleClose();
           }}
         >
-          Delete
+          <div>Delete</div>
         </MenuItem>
 
         <MenuItem
@@ -382,7 +312,7 @@ const Sidebar = ({
             clickCreateFileOrDirMenu(FileType.file);
           }}
         >
-          New File
+          <div>New File</div>
         </MenuItem>
         <MenuItem
           disabled={!(contextMenu && contextMenu.file.isDir())}
@@ -390,7 +320,7 @@ const Sidebar = ({
             clickCreateFileOrDirMenu(FileType.dir);
           }}
         >
-          New Directory
+          <div>New Directory</div>
         </MenuItem>
       </Menu>
 

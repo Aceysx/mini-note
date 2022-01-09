@@ -19,17 +19,18 @@ export const publish = (type: Event, data: any) => {
   emitter.emit(type, data);
 };
 
-emitter.on(Event.INIT_NOTEBOOK_EVENT, fileMode => {
+emitter.on(Event.INIT_NOTEBOOK_EVENT, fileModel => {
   getDvaApp()._store.dispatch({
     type: FileModel.actionType,
-    rootFile: fileMode
+    rootFile: fileModel,
+    dirsOpenState: [fileModel.path]
   });
 });
 
-emitter.on(Event.FETCH_FILE_EVENT, fileMode => {
+emitter.on(Event.FETCH_FILE_EVENT, fileModel => {
   getDvaApp()._store.dispatch({
     type: FileModel.actionType,
-    currentEditFile: fileMode
+    currentEditFile: fileModel
   });
 });
 

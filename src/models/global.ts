@@ -4,7 +4,7 @@ import { getDvaApp } from "@@/plugin-dva/exports";
 
 export interface SiderbarState {
   rootFile: FileModel | undefined;
-  dirsOpenState: {};
+  dirsOpenState: [];
   currentSelectedDirFile: FileModel | undefined;
   currentEditFile: FileModel | undefined;
 }
@@ -47,7 +47,7 @@ const GlobalModel: GlobalModelType = {
   state: {
     siderbarState: {
       rootFile: undefined,
-      dirsOpenState: {},
+      dirsOpenState: [],
       currentSelectedDirFile: undefined,
       currentEditFile: undefined
     },
@@ -110,7 +110,6 @@ const GlobalModel: GlobalModelType = {
     },
     // @ts-ignore
     settingState(state: any, data: any): any {
-      console.log(data);
       return {
         ...state,
         ...{ settingState: { ...state.settingState, ...data } }
