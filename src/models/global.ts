@@ -15,10 +15,15 @@ export interface MessageState {
   message?: string | undefined;
 }
 
+export interface SettingState {
+  workspace: string | null;
+  openFileModel: boolean;
+}
+
 export interface GlobalModelState {
-  workspace: string;
   siderbarState: SiderbarState;
   messageState: MessageState;
+  settingState: SettingState;
 }
 
 export interface GlobalModelType {
@@ -33,13 +38,13 @@ export interface GlobalModelType {
     message: Function;
     notebook: Function;
     siderbarState: Function;
+    settingState: Function;
   };
 }
 
 const GlobalModel: GlobalModelType = {
   namespace: "global",
   state: {
-    workspace: window.localStorage.getItem("workspace") + "",
     siderbarState: {
       rootFile: undefined,
       dirsOpenState: {},
@@ -48,6 +53,10 @@ const GlobalModel: GlobalModelType = {
     },
     messageState: {
       isOpen: false
+    },
+    settingState: {
+      openFileModel: false,
+      workspace: window.localStorage.getItem("workspace")
     }
   },
   dispatch: {
@@ -58,14 +67,29 @@ const GlobalModel: GlobalModelType = {
       });
     },
     notebook: () => {
-      const defaultPath = "/Users/xinsi/Documents/PERSONAL/notebook";
-      FileModel.fetchFilesByPath(
-        localStorage.getItem("note_workspace") || defaultPath
-      );
+      let workspace = localStorage.getItem("workspace");
+
+      if (workspace) {
+        FileModel.fetchFilesByPath(
+          // @ts-ignore
+          localStorage.getItem("workspace")
+        );
+      } else {
+        getDvaApp()._store.dispatch({
+          type: "global/settingState",
+          openFileModel: true
+        });
+      }
     },
     siderbarState: (data: any) => {
       getDvaApp()._store.dispatch({
         type: "global/siderbarState",
+        ...data
+      });
+    },
+    settingState: (data: any) => {
+      getDvaApp()._store.dispatch({
+        type: "global/settingState",
         ...data
       });
     }
@@ -82,6 +106,14 @@ const GlobalModel: GlobalModelType = {
       return {
         ...state,
         ...{ messageState: { ...state.messageState, ...data } }
+      };
+    },
+    // @ts-ignore
+    settingState(state: any, data: any): any {
+      console.log(data);
+      return {
+        ...state,
+        ...{ settingState: { ...state.settingState, ...data } }
       };
     }
   }

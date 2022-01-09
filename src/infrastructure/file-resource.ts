@@ -37,4 +37,8 @@ export default class FileResource {
     let file = FileResource.send(Event.MODIFY_FILE_NAME, data);
     return plainToClass(FileModel, file);
   }
+
+  static openDir() {
+    return FileResource.send(Event.OPEN_DIR, {});
+  }
 }

@@ -9,6 +9,7 @@ import Sidebar from "@/layouts/sidebar";
 import MessageBody from "@/components/common/message-body";
 import GlobalModel from "@/models/global";
 import { Content } from "./content";
+import OpenFileModel from "@/components/common/message-body";
 
 export default function() {
   useEffect(() => {
@@ -24,6 +25,7 @@ export default function() {
         <Content />
       </Grid>
       <MessageBody />
+      <OpenFileModel />
     </Grid>
   );
 }
