@@ -1,15 +1,16 @@
-import React, { useState } from "react";
+import React, {useState} from "react";
 import List from "@mui/material/List";
-import { connect } from "umi";
-import GlobalModel, { GlobalModelState, SiderbarState } from "@/models/global";
-import FileModel, { FileType } from "@/models/file";
+import {connect} from "umi";
+import GlobalModel, {GlobalModelState, SiderbarState} from "@/models/global";
+import FileModel, {FileType} from "@/models/file";
 import FolderIcon from "@mui/icons-material/Folder";
 import MenuItem from "@mui/material/MenuItem";
-import { useJupiterNestedMenuStyles } from "@mui-treasury/styles/nestedMenu/gatsby";
+import {useMaterialNestedMenuStyles} from '@mui-treasury/styles/nestedMenu/material';
 import NestedMenu from "@mui-treasury/components/menu/nested";
-import { useFadedShadowStyles } from "@mui-treasury/styles/shadow/faded";
+import {useFadedShadowStyles} from "@mui-treasury/styles/shadow/faded";
 
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
@@ -22,43 +23,37 @@ import {
 import _ from "path";
 
 const Sidebar = ({
-  siderbarState
-}: {
+                   siderbarState
+                 }: {
   dispatch: any;
   siderbarState: SiderbarState;
 }) => {
-  const { rootFile, dirsOpenState } = siderbarState;
+  const {rootFile, dirsOpenState} = siderbarState;
   const [deleteFile, setDeleteFile] = useState<FileModel | undefined>(
     undefined
   );
-  const [currentActionFile, setCurrentActionFile] = useState<
-    | {
-        parentFile: FileModel;
-        currentFile: FileModel | undefined;
-        type: FileType;
-        action: "create" | "edit";
-        tempName: string | undefined;
-      }
-    | undefined
-  >(undefined);
+  const [currentActionFile, setCurrentActionFile] = useState<| {
+    parentFile: FileModel;
+    currentFile: FileModel | undefined;
+    type: FileType;
+    action: "create" | "edit";
+    tempName: string | undefined;
+  }
+    | undefined>(undefined);
 
-  const [currentCreateActionFile, setCurrentCreateActionFile] = useState<
-    | {
-        parentFile: FileModel;
-        currentFileName: string;
-        type: FileType;
-      }
-    | undefined
-  >(undefined);
+  const [currentCreateActionFile, setCurrentCreateActionFile] = useState<| {
+    parentFile: FileModel;
+    currentFileName: string;
+    type: FileType;
+  }
+    | undefined>(undefined);
 
-  const [currentEditActionFile, setCurrentEditActionFile] = useState<
-    | {
-        parentFile: FileModel;
-        file: FileModel;
-        currentFileName: string;
-      }
-    | undefined
-  >(undefined);
+  const [currentEditActionFile, setCurrentEditActionFile] = useState<| {
+    parentFile: FileModel;
+    file: FileModel;
+    currentFileName: string;
+  }
+    | undefined>(undefined);
 
   const [contextMenu, setContextMenu] = React.useState<{
     position: {
@@ -78,13 +73,13 @@ const Sidebar = ({
     setContextMenu(
       contextMenu === null
         ? {
-            position: {
-              mouseY: event.clientY - 4,
-              mouseX: event.clientX - 2
-            },
-            parentFile,
-            file
-          }
+          position: {
+            mouseY: event.clientY - 4,
+            mouseX: event.clientX - 2
+          },
+          parentFile,
+          file
+        }
         : null
     );
     return false;
@@ -103,7 +98,7 @@ const Sidebar = ({
   };
 
   const clickCreateFileOrDirMenu = (type: FileType) => {
-    const { file } = contextMenu;
+    const {file} = contextMenu;
     handleClose();
     setCurrentActionFile({
       parentFile: file,
@@ -115,7 +110,7 @@ const Sidebar = ({
   };
 
   const clickEditFileOrDirMenu = () => {
-    const { parentFile, file } = contextMenu;
+    const {parentFile, file} = contextMenu;
     handleClose();
     setCurrentActionFile({
       parentFile,
@@ -188,21 +183,22 @@ const Sidebar = ({
     setCurrentEditActionFile(undefined);
   };
 
-  const getSubMenus = (parentFile: FileModel) => {
+  const getSubMenus = (parentFile: FileModel, index: number) => {
     const dirMenus: [] = [],
       files: [] = [];
+
     parentFile.getSub().forEach(item => {
+      const style = {paddingLeft: `${index}rem`}
       if (item.isDir()) {
         const isEmpty = item.getSub().length === 0;
-
         const dirComponent = (
           <span
             onContextMenu={e => handleContextMenu(e, parentFile, item)}
-            style={{ width: "100%" }}
+            style={{width: "100%", ...style}}
             onClick={() => clickDirItem(item)}
           >
-            <FolderIcon style={{ position: "absolute", fontSize: "1.2em" }} />
-            <span style={{ paddingLeft: "25px" }}>
+            <FolderIcon style={{position: "absolute", fontSize: "1.2em"}}/>
+            <span style={{paddingLeft: "25px"}}>
               {item.parseDisplayName()}
             </span>
           </span>
@@ -216,20 +212,20 @@ const Sidebar = ({
           dirMenus.push({
             key: item.path,
             label: dirComponent,
-            subMenus: getSubMenus(item)
+            subMenus: getSubMenus(item, index + 1)
           });
         }
       } else {
         const component = (
           <span
-            style={{ width: "100%" }}
+            style={{width: "100%", ...style}}
             onContextMenu={e => handleContextMenu(e, item, item)}
             onClick={() => FileModel.fetchEditFile(item.path)}
           >
             {item.parseDisplayName()}
           </span>
         );
-        files.push({ key: item.path, label: component });
+        files.push({key: item.path, label: component});
       }
     });
     return [...dirMenus, ...files];
@@ -239,7 +235,7 @@ const Sidebar = ({
     const data = [];
     if (rootFile && rootFile.isDir()) {
       const item = (
-        <span style={{ width: "100%" }} onClick={() => clickDirItem(rootFile)}>
+        <span style={{width: "100%"}} onClick={() => clickDirItem(rootFile)}>
           {rootFile.parseDisplayName()}
         </span>
       );
@@ -247,14 +243,15 @@ const Sidebar = ({
       const root = {
         key: rootFile.path,
         label: item,
-        subMenus: getSubMenus(rootFile)
+        subMenus: getSubMenus(rootFile, 1)
       };
       data.push(root);
     }
     return data;
   };
+
   return (
-    <List
+    <Box
       sx={{
         width: "100%",
         paddingTop: "50px!important",
@@ -262,8 +259,7 @@ const Sidebar = ({
         overflowY: "scroll"
       }}
       className={"layout_scroll_hide"}
-      component="nav"
-      aria-labelledby="nested-list-subheader"
+      // aria-labelledby="nested-list-subheader"
     >
       <NestedMenu
         openKeys={dirsOpenState}
@@ -275,7 +271,7 @@ const Sidebar = ({
           }
         }}
         menus={render()}
-        useStyles={useJupiterNestedMenuStyles}
+        useStyles={useMaterialNestedMenuStyles}
       />
 
       <Menu
@@ -288,9 +284,9 @@ const Sidebar = ({
         anchorPosition={
           contextMenu !== null
             ? {
-                top: contextMenu.position.mouseY,
-                left: contextMenu.position.mouseX
-              }
+              top: contextMenu.position.mouseY,
+              left: contextMenu.position.mouseX
+            }
             : undefined
         }
       >
@@ -381,10 +377,10 @@ const Sidebar = ({
           </Button>
         </DialogActions>
       </Dialog>
-    </List>
+    </Box>
   );
 };
-export default connect(({ global }: { global: GlobalModelState }) => {
+export default connect(({global}: { global: GlobalModelState }) => {
   return {
     siderbarState: global.siderbarState
   };

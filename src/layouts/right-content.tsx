@@ -1,7 +1,7 @@
 import React from "react";
 import NoteBody from "../components/note-body";
 
-export const Content = () => {
+export const RightContent = () => {
   return (
     <div>
       <NoteBody />
